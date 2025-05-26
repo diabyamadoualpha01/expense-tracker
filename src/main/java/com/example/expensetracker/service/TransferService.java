@@ -21,29 +21,26 @@ public class TransferService {
     }
 
     @Transactional
-    public Transfer transfer(Long sourceAccountId, Long destinationAccountId, Double amount, String description) {
-        if (sourceAccountId.equals(destinationAccountId)) {
-            throw new RuntimeException("Le compte source et destination ne peuvent pas être les mêmes");
+    public Transfer transfer(Long sourceId, Long destId, Double amount, String description) {
+        if (sourceId.equals(destId)) {
+            throw new IllegalArgumentException("Le compte source et destination ne peuvent pas être les mêmes");
         }
 
-        Account source = accountRepository.findById(sourceAccountId)
-                .orElseThrow(() -> new RuntimeException("Compte source non trouvé"));
-
-        Account destination = accountRepository.findById(destinationAccountId)
-                .orElseThrow(() -> new RuntimeException("Compte destination non trouvé"));
+        Account source = accountRepository.findById(sourceId)
+                .orElseThrow(() -> new IllegalArgumentException("Compte source non trouvé"));
+        Account destination = accountRepository.findById(destId)
+                .orElseThrow(() -> new IllegalArgumentException("Compte destination non trouvé"));
 
         if (source.getBalance() < amount) {
-            throw new RuntimeException("Solde insuffisant sur le compte source");
+            throw new IllegalArgumentException("Solde insuffisant sur le compte source");
         }
 
-        // Mise à jour des soldes
         source.setBalance(source.getBalance() - amount);
         destination.setBalance(destination.getBalance() + amount);
 
         accountRepository.save(source);
         accountRepository.save(destination);
 
-        // Création du transfert
         Transfer transfer = new Transfer();
         transfer.setAmount(amount);
         transfer.setDate(LocalDate.now());

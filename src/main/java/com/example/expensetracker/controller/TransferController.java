@@ -1,6 +1,5 @@
 package com.example.expensetracker.controller;
 
-import com.example.expensetracker.model.Transfer;
 import com.example.expensetracker.service.TransferService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,37 +15,21 @@ public class TransferController {
     }
 
     @PostMapping
-    public ResponseEntity<Transfer> transfer(@RequestBody TransferRequest request) {
-        try {
-            Transfer transfer = transferService.transfer(
-                    request.getSourceAccountId(),
-                    request.getDestinationAccountId(),
-                    request.getAmount(),
-                    request.getDescription()
-            );
-            return ResponseEntity.ok(transfer);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null);
-        }
+    public ResponseEntity<?> transfer(@RequestBody TransferRequest request) {
+        var transfer = transferService.transfer(
+                request.sourceAccountId(),
+                request.destinationAccountId(),
+                request.amount(),
+                request.description()
+        );
+        return ResponseEntity.ok(transfer);
     }
 
-    public static class TransferRequest {
-        private Long sourceAccountId;
-        private Long destinationAccountId;
-        private Double amount;
-        private String description;
-
-        // getters/setters
-        public Long getSourceAccountId() { return sourceAccountId; }
-        public void setSourceAccountId(Long sourceAccountId) { this.sourceAccountId = sourceAccountId; }
-
-        public Long getDestinationAccountId() { return destinationAccountId; }
-        public void setDestinationAccountId(Long destinationAccountId) { this.destinationAccountId = destinationAccountId; }
-
-        public Double getAmount() { return amount; }
-        public void setAmount(Double amount) { this.amount = amount; }
-
-        public String getDescription() { return description; }
-        public void setDescription(String description) { this.description = description; }
-    }
+    // DTO record (Java 17+)
+    public record TransferRequest(
+            Long sourceAccountId,
+            Long destinationAccountId,
+            Double amount,
+            String description
+    ) {}
 }
