@@ -23,4 +23,8 @@ public class Transfer {
 
     @ManyToOne
     private Account toAccount;
+
+    private String description;
+
 }
+

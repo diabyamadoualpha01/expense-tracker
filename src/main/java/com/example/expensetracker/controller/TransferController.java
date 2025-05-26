@@ -18,7 +18,12 @@ public class TransferController {
     @PostMapping
     public ResponseEntity<Transfer> transfer(@RequestBody TransferRequest request) {
         try {
-            Transfer transfer = transferService.transferToSavings(request.getAmount());
+            Transfer transfer = transferService.transfer(
+                    request.getSourceAccountId(),
+                    request.getDestinationAccountId(),
+                    request.getAmount(),
+                    request.getDescription()
+            );
             return ResponseEntity.ok(transfer);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(null);
@@ -26,10 +31,22 @@ public class TransferController {
     }
 
     public static class TransferRequest {
+        private Long sourceAccountId;
+        private Long destinationAccountId;
         private Double amount;
+        private String description;
 
         // getters/setters
+        public Long getSourceAccountId() { return sourceAccountId; }
+        public void setSourceAccountId(Long sourceAccountId) { this.sourceAccountId = sourceAccountId; }
+
+        public Long getDestinationAccountId() { return destinationAccountId; }
+        public void setDestinationAccountId(Long destinationAccountId) { this.destinationAccountId = destinationAccountId; }
+
         public Double getAmount() { return amount; }
         public void setAmount(Double amount) { this.amount = amount; }
+
+        public String getDescription() { return description; }
+        public void setDescription(String description) { this.description = description; }
     }
 }

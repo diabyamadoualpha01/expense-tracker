@@ -21,27 +21,35 @@ public class TransferService {
     }
 
     @Transactional
-    public Transfer transferToSavings(Double amount) {
-        Account principal = accountRepository.findByName("principal")
-                .orElseThrow(() -> new RuntimeException("Compte principal non trouvé"));
-        Account savings = accountRepository.findByName("savings")
-                .orElseThrow(() -> new RuntimeException("Compte savings non trouvé"));
-
-        if (principal.getBalance() < amount) {
-            throw new RuntimeException("Solde insuffisant");
+    public Transfer transfer(Long sourceAccountId, Long destinationAccountId, Double amount, String description) {
+        if (sourceAccountId.equals(destinationAccountId)) {
+            throw new RuntimeException("Le compte source et destination ne peuvent pas être les mêmes");
         }
 
-        principal.setBalance(principal.getBalance() - amount);
-        savings.setBalance(savings.getBalance() + amount);
+        Account source = accountRepository.findById(sourceAccountId)
+                .orElseThrow(() -> new RuntimeException("Compte source non trouvé"));
 
-        accountRepository.save(principal);
-        accountRepository.save(savings);
+        Account destination = accountRepository.findById(destinationAccountId)
+                .orElseThrow(() -> new RuntimeException("Compte destination non trouvé"));
 
+        if (source.getBalance() < amount) {
+            throw new RuntimeException("Solde insuffisant sur le compte source");
+        }
+
+        // Mise à jour des soldes
+        source.setBalance(source.getBalance() - amount);
+        destination.setBalance(destination.getBalance() + amount);
+
+        accountRepository.save(source);
+        accountRepository.save(destination);
+
+        // Création du transfert
         Transfer transfer = new Transfer();
         transfer.setAmount(amount);
         transfer.setDate(LocalDate.now());
-        transfer.setFromAccount(principal);
-        transfer.setToAccount(savings);
+        transfer.setFromAccount(source);
+        transfer.setToAccount(destination);
+        transfer.setDescription(description);
 
         return transferRepository.save(transfer);
     }
